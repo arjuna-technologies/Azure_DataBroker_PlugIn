@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--                                                                                                     -->
+<!-- Copyright (c) 2015, Arjuna Technologies Limited, Newcastle-upon-Tyne, England. All rights reserved. -->
+<!--                                                                                                     -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.arjuna.dbplugins.azure</groupId>
+        <artifactId>azure-plugin-parent</artifactId>
+        <version>1.0.0p1m1</version>
+    </parent>
+
+    <artifactId>azure-storage</artifactId>
+
+    <packaging>ejb</packaging>
+
+    <name>Azure Storage</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.arjuna.databroker</groupId>
+            <artifactId>data-common</artifactId>
+            <version>${version.com.arjuna.databroker}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+           <groupId>com.arjuna.databroker</groupId>
+            <artifactId>data-common-jee</artifactId>
+            <version>${version.com.arjuna.databroker}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.arjuna.databroker</groupId>
+            <artifactId>data-core</artifactId>
+            <version>${version.com.arjuna.databroker}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.arjuna.databroker</groupId>
+            <artifactId>data-core-jee</artifactId>
+            <version>${version.com.arjuna.databroker}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.arjuna.dbutils.testsupport</groupId>
+            <artifactId>dataflownodes-dummy</artifactId>
+            <version>1.0.0p2m1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.arjuna.dbutils.testsupport</groupId>
+            <artifactId>dataflownodes-lifecycle</artifactId>
+            <version>1.0.0p2m1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
