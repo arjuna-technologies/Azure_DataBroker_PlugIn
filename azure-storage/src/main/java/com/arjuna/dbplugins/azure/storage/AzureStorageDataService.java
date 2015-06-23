@@ -4,11 +4,18 @@
 
 package com.arjuna.dbplugins.azure.storage;
 
+import java.net.URI;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.arjuna.databroker.data.DataConsumer;
@@ -21,14 +28,22 @@ import com.arjuna.databroker.data.jee.annotation.PostCreated;
 import com.arjuna.databroker.data.jee.annotation.PostRecovery;
 import com.arjuna.databroker.data.jee.annotation.PreConfig;
 import com.arjuna.databroker.data.jee.annotation.PreDelete;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.BlobContainerPermissions;
+import com.microsoft.azure.storage.blob.BlobContainerPublicAccessType;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
+import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 
 public class AzureStorageDataService implements DataService
 {
     private static final Logger logger = Logger.getLogger(AzureStorageDataService.class.getName());
 
+    public static final String SERVICEBASEURL_PROPERTYNAME    = "Service Base URL";
+    public static final String CONTAINERNAME_PROPERTYNAME     = "Container Name";
     public static final String STORAGECONNECTION_PROPERTYNAME = "Storage Connection";
-    public static final String PACKAGEID_PROPERTYNAME         = "Package Id";
-    public static final String APIKEY_PROPERTYNAME            = "API Key";
 
     public AzureStorageDataService()
     {
@@ -84,9 +99,40 @@ public class AzureStorageDataService implements DataService
     @PostRecovery
     public void setup()
     {
+        _serviceBaseURL    = _properties.get(SERVICEBASEURL_PROPERTYNAME);
+        _containerName     = _properties.get(CONTAINERNAME_PROPERTYNAME);
         _storageConnection = _properties.get(STORAGECONNECTION_PROPERTYNAME);
-        _packageId         = _properties.get(PACKAGEID_PROPERTYNAME);
-        _apiKey            = _properties.get(APIKEY_PROPERTYNAME);
+        if ((_storageConnection != null) && (! "".equals(_storageConnection.trim())))
+        {
+            try
+            {
+                CloudStorageAccount storageAccount = CloudStorageAccount.parse(_storageConnection);
+                CloudBlobClient     blobClient     = storageAccount.createCloudBlobClient();
+                CloudBlobContainer  blobContainer  = blobClient.getContainerReference(_containerName);
+                blobContainer.createIfNotExists();
+
+                SharedAccessBlobPolicy blobPolicy   = new SharedAccessBlobPolicy();
+                GregorianCalendar      calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                calendar.setTime(new Date());
+                blobPolicy.setSharedAccessStartTime(calendar.getTime());
+                calendar.add(Calendar.HOUR, 6);
+                blobPolicy.setSharedAccessExpiryTime(calendar.getTime());
+                blobPolicy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ, SharedAccessBlobPermissions.WRITE));
+
+                BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
+                containerPermissions.setPublicAccess(BlobContainerPublicAccessType.OFF);
+                containerPermissions.getSharedAccessPolicies().put("accesspolicy", blobPolicy);
+                blobContainer.uploadPermissions(containerPermissions);
+
+                _containerSAS = blobContainer.generateSharedAccessSignature(blobPolicy, null);
+            }
+            catch (Throwable throwable)
+            {
+                logger.log(Level.WARNING, "Problems with Azure blob store SAS", throwable);
+                System.err.println("Problems with Azure blob store SAS");
+                throwable.printStackTrace(System.err);
+            }
+        }
     }
 
     @PreConfig
@@ -143,16 +189,35 @@ public class AzureStorageDataService implements DataService
         }
     }
 
-    private void uploadResource(byte[] data, String fileName, String resourceName, String resourceFormat, String resourceDescription)
+    private void uploadResource(byte[] data, String blobName, String resourceName, String resourceFormat, String resourceDescription)
     {
         logger.log(Level.FINE, "AzureStorageDataService.consume");
 
         try
         {
+            CloudBlobClient blobClient = new CloudBlobClient(new URI(_serviceBaseURL));
+            URI             blobURI    = new URI(blobClient.getEndpoint().toString() + "/" + _containerName + "/" + blobName + "?" + _containerSAS);
+
+            System.err.println("URL: [" + blobURI.toString() + "]");
+
+            CloudBlockBlob blockBlob   = new CloudBlockBlob(blobURI);
+
+            HashMap<String, String> metadata = new HashMap<String, String>();
+            if (resourceName != null)
+                metadata.put("resourceName", resourceName);
+            if (resourceFormat != null)
+                metadata.put("resourceFormat", resourceFormat);
+            if (resourceDescription != null)
+                metadata.put("resourceDescription", resourceDescription);
+            blockBlob.setMetadata(metadata);
+
+            blockBlob.uploadFromByteArray(data, 0, data.length);
         }
         catch (Throwable throwable)
         {
             logger.log(Level.WARNING, "Problems with Azure blob store api invoke", throwable);
+            System.err.println("Problems with Azure blob store api invoke");
+            throwable.printStackTrace(System.err);
         }
     }
 
@@ -196,9 +261,10 @@ public class AzureStorageDataService implements DataService
             return null;
     }
 
+    private String _serviceBaseURL;
+    private String _containerName;
     private String _storageConnection;
-    private String _packageId;
-    private String _apiKey;
+    private String _containerSAS;
 
     private DataFlow             _dataFlow;
     private String               _name;
