@@ -43,6 +43,8 @@ public class AzureStorageDataService implements DataService
 
     public static final String SERVICEBASEURL_PROPERTYNAME    = "Service Base URL";
     public static final String CONTAINERNAME_PROPERTYNAME     = "Container Name";
+    public static final String ACCOUNTNAME_PROPERTYNAME       = "Account Name";
+    public static final String ACCOUNTKEY_PROPERTYNAME        = "Account Key";
     public static final String STORAGECONNECTION_PROPERTYNAME = "Storage Connection";
 
     public AzureStorageDataService()
@@ -102,6 +104,8 @@ public class AzureStorageDataService implements DataService
         _serviceBaseURL    = _properties.get(SERVICEBASEURL_PROPERTYNAME);
         _containerName     = _properties.get(CONTAINERNAME_PROPERTYNAME);
         _storageConnection = _properties.get(STORAGECONNECTION_PROPERTYNAME);
+        _accountName       = _properties.get(STORAGECONNECTION_PROPERTYNAME);
+        _accountKey        = _properties.get(STORAGECONNECTION_PROPERTYNAME);
         if ((_storageConnection != null) && (! "".equals(_storageConnection.trim())))
         {
             try
@@ -139,6 +143,12 @@ public class AzureStorageDataService implements DataService
     @PreDelete
     public void teardown()
     {
+        _serviceBaseURL    = null;
+        _containerName     = null;
+        _storageConnection = null;
+        _accountName       = null;
+        _accountKey        = null;
+        _containerSAS      = null;
     }
 
     public void consumeString(String data)
@@ -264,6 +274,8 @@ public class AzureStorageDataService implements DataService
     private String _serviceBaseURL;
     private String _containerName;
     private String _storageConnection;
+    private String _accountName;
+    private String _accountKey;
     private String _containerSAS;
 
     private DataFlow             _dataFlow;
