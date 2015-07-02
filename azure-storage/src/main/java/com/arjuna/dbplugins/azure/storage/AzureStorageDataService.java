@@ -46,6 +46,7 @@ public class AzureStorageDataService implements DataService
     public static final String ACCOUNTNAME_PROPERTYNAME       = "Account Name";
     public static final String ACCOUNTKEY_PROPERTYNAME        = "Account Key";
     public static final String STORAGECONNECTION_PROPERTYNAME = "Storage Connection";
+    public static final String CONTAINERSAS_PROPERTYNAME      = "Container SAS";
 
     public AzureStorageDataService()
     {
@@ -104,44 +105,46 @@ public class AzureStorageDataService implements DataService
         _serviceBaseURL    = _properties.get(SERVICEBASEURL_PROPERTYNAME);
         _containerName     = _properties.get(CONTAINERNAME_PROPERTYNAME);
         _storageConnection = _properties.get(STORAGECONNECTION_PROPERTYNAME);
-        _accountName       = _properties.get(STORAGECONNECTION_PROPERTYNAME);
-        _accountKey        = _properties.get(STORAGECONNECTION_PROPERTYNAME);
+        _accountName       = _properties.get(ACCOUNTNAME_PROPERTYNAME);
+        _accountKey        = _properties.get(ACCOUNTKEY_PROPERTYNAME);
+        _containerSAS      = _properties.get(CONTAINERSAS_PROPERTYNAME);
 
-        String storageConnection = null;
-        if ((_storageConnection != null) && (! "".equals(_storageConnection.trim())))
-            storageConnection = _storageConnection;
-        else if ((_accountName != null) && (! "".equals(_accountName.trim())) && (_accountKey != null) && (! "".equals(_accountKey.trim())))
-            storageConnection = "DefaultEndpointsProtocol=http;AccountName=" + _accountName + ";AccountKey=" + _accountKey;
-
-        if (storageConnection != null)
+        if ((_containerSAS != null) && (! "".equals(_containerSAS.trim())))
         {
-            try
+            String storageConnection = null;
+            if ((_storageConnection != null) && (! "".equals(_storageConnection.trim())))
+                storageConnection = _storageConnection;
+            else if ((_accountName != null) && (! "".equals(_accountName.trim())) && (_accountKey != null) && (! "".equals(_accountKey.trim())))
+                storageConnection = "DefaultEndpointsProtocol=http;AccountName=" + _accountName + ";AccountKey=" + _accountKey;
+
+            if (storageConnection != null)
             {
-                CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnection);
-                CloudBlobClient     blobClient     = storageAccount.createCloudBlobClient();
-                CloudBlobContainer  blobContainer  = blobClient.getContainerReference(_containerName);
-                blobContainer.createIfNotExists();
+                try
+                {
+                    CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnection);
+                    CloudBlobClient     blobClient     = storageAccount.createCloudBlobClient();
+                    CloudBlobContainer  blobContainer  = blobClient.getContainerReference(_containerName);
+                    blobContainer.createIfNotExists();
 
-                SharedAccessBlobPolicy blobPolicy   = new SharedAccessBlobPolicy();
-                GregorianCalendar      calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                calendar.setTime(new Date());
-                blobPolicy.setSharedAccessStartTime(calendar.getTime());
-                calendar.add(Calendar.HOUR, 6);
-                blobPolicy.setSharedAccessExpiryTime(calendar.getTime());
-                blobPolicy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ, SharedAccessBlobPermissions.WRITE));
+                    SharedAccessBlobPolicy blobPolicy   = new SharedAccessBlobPolicy();
+                    GregorianCalendar      calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                    calendar.setTime(new Date());
+                    blobPolicy.setSharedAccessStartTime(calendar.getTime());
+                    calendar.add(Calendar.HOUR, 6);
+                    blobPolicy.setSharedAccessExpiryTime(calendar.getTime());
+                    blobPolicy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ, SharedAccessBlobPermissions.WRITE));
 
-                BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
-                containerPermissions.setPublicAccess(BlobContainerPublicAccessType.OFF);
-                containerPermissions.getSharedAccessPolicies().put("accesspolicy", blobPolicy);
-                blobContainer.uploadPermissions(containerPermissions);
+                    BlobContainerPermissions containerPermissions = new BlobContainerPermissions();
+                    containerPermissions.setPublicAccess(BlobContainerPublicAccessType.OFF);
+                    containerPermissions.getSharedAccessPolicies().put("accesspolicy", blobPolicy);
+                    blobContainer.uploadPermissions(containerPermissions);
 
-                _containerSAS = blobContainer.generateSharedAccessSignature(blobPolicy, null);
-            }
-            catch (Throwable throwable)
-            {
-                logger.log(Level.WARNING, "Problems with Azure blob store SAS", throwable);
-                System.err.println("Problems with Azure blob store SAS");
-                throwable.printStackTrace(System.err);
+                    _containerSAS = blobContainer.generateSharedAccessSignature(blobPolicy, null);
+                }
+                catch (Throwable throwable)
+                {
+                    logger.log(Level.WARNING, "Problems with Azure blob store SAS", throwable);
+                }
             }
         }
     }
@@ -214,10 +217,7 @@ public class AzureStorageDataService implements DataService
         {
             CloudBlobClient blobClient = new CloudBlobClient(new URI(_serviceBaseURL));
             URI             blobURI    = new URI(blobClient.getEndpoint().toString() + "/" + _containerName + "/" + blobName + "?" + _containerSAS);
-
-            System.err.println("URL: [" + blobURI.toString() + "]");
-
-            CloudBlockBlob blockBlob   = new CloudBlockBlob(blobURI);
+            CloudBlockBlob  blockBlob  = new CloudBlockBlob(blobURI);
 
             HashMap<String, String> metadata = new HashMap<String, String>();
             if (resourceName != null)
@@ -233,8 +233,6 @@ public class AzureStorageDataService implements DataService
         catch (Throwable throwable)
         {
             logger.log(Level.WARNING, "Problems with Azure blob store api invoke", throwable);
-            System.err.println("Problems with Azure blob store api invoke");
-            throwable.printStackTrace(System.err);
         }
     }
 

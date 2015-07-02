@@ -73,7 +73,10 @@ public class AzureStorageDataFlowNodeFactory implements DataFlowNodeFactory
 
                 propertyNames.add(AzureStorageDataService.SERVICEBASEURL_PROPERTYNAME);
                 propertyNames.add(AzureStorageDataService.CONTAINERNAME_PROPERTYNAME);
+                propertyNames.add(AzureStorageDataService.ACCOUNTNAME_PROPERTYNAME);
+                propertyNames.add(AzureStorageDataService.ACCOUNTKEY_PROPERTYNAME);
                 propertyNames.add(AzureStorageDataService.STORAGECONNECTION_PROPERTYNAME);
+                propertyNames.add(AzureStorageDataService.CONTAINERSAS_PROPERTYNAME);
 
                 return propertyNames;
             }
