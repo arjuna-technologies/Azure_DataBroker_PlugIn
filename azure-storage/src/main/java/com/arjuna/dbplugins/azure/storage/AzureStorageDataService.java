@@ -109,13 +109,13 @@ public class AzureStorageDataService implements DataService
         _accountKey        = _properties.get(ACCOUNTKEY_PROPERTYNAME);
         _containerSAS      = _properties.get(CONTAINERSAS_PROPERTYNAME);
 
-        if ((_containerSAS != null) && (! "".equals(_containerSAS.trim())))
+        if ((_containerSAS == null) || "".equals(_containerSAS.trim()))
         {
             String storageConnection = null;
             if ((_storageConnection != null) && (! "".equals(_storageConnection.trim())))
                 storageConnection = _storageConnection;
             else if ((_accountName != null) && (! "".equals(_accountName.trim())) && (_accountKey != null) && (! "".equals(_accountKey.trim())))
-                storageConnection = "DefaultEndpointsProtocol=http;AccountName=" + _accountName + ";AccountKey=" + _accountKey;
+                storageConnection = "DefaultEndpointsProtocol=https;AccountName=" + _accountName + ";AccountKey=" + _accountKey;
 
             if (storageConnection != null)
             {
