@@ -32,11 +32,6 @@
             <version>${version.com.arjuna.databroker}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-core</artifactId>
-            <version>0.7.0</version>
-        </dependency -->
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
