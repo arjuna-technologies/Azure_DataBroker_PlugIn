@@ -45,6 +45,7 @@
 
     <modules>
         <module>azure-storage</module>
+        <module>azure-sqlserver</module>
         <module>azure-plugin</module>
         <module>azure-plugin-ear</module>
     </modules>
