@@ -85,9 +85,9 @@ public class AzureSQLServerDataService implements DataService
     @PostRecovery
     public void setup()
     {
-    	_serverName   = _properties.get(SERVERNAME_PROPERTYNAME);
-    	_databaseName = _properties.get(DATABASENAME_PROPERTYNAME);
-    	_user         = _properties.get(USER_PROPERTYNAME);
+        _serverName   = _properties.get(SERVERNAME_PROPERTYNAME);
+        _databaseName = _properties.get(DATABASENAME_PROPERTYNAME);
+        _user         = _properties.get(USER_PROPERTYNAME);
         _password     = _properties.get(PASSWORD_PROPERTYNAME);
 
     }
@@ -96,10 +96,10 @@ public class AzureSQLServerDataService implements DataService
     @PreDelete
     public void teardown()
     {
-    	_serverName   = null;
-    	_databaseName = null;
-    	_user         = null;
-    	_password     = null;
+        _serverName   = null;
+        _databaseName = null;
+        _user         = null;
+        _password     = null;
     }
 
     public void consumeString(String data)
