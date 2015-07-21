@@ -4,6 +4,9 @@
 
 package com.arjuna.dbplugins.azure.sqlserver;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -156,11 +159,61 @@ public class AzureSQLServerDataService implements DataService
 
         try
         {
+            String connectionURL = "jdbc:sqlserver://" + _serverName + ":1433;" + "databaseName=" + _databaseName + ";user=" + _user + ";password=" + _password;
+
+            Connection connection = null;
+            Statement  statement  = null;
+
+            try
+            {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(connectionURL);
+
+                String sql = generateUpdateSQL(data);
+                if (sql != null)
+                {
+                    statement = connection.createStatement();
+
+                    boolean result = statement.execute(sql);
+                    if (! result)
+                        logger.log(Level.WARNING, "Problems during updating");
+                }
+            }
+            catch (Exception exception)
+            {
+                exception.printStackTrace();
+            }
+            finally
+            {
+               if (statement != null)
+                   try
+                   {
+                       statement.close();
+                   }
+                   catch (Exception exception)
+                   {
+                       logger.log(Level.WARNING, "Problems closing SQL Server statement", exception);
+                   }
+               if (connection != null)
+                   try
+                   {
+                       connection.close();
+                   }
+                   catch (Exception exception)
+                   {
+                       logger.log(Level.WARNING, "Problems closing SQL Server connection", exception);
+                   }
+            }
         }
         catch (Throwable throwable)
         {
             logger.log(Level.WARNING, "Problems with Azure SQL Server API invoke", throwable);
         }
+    }
+
+    private String generateUpdateSQL(byte[] data)
+    {
+        return null;
     }
 
     @Override
