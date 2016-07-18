@@ -166,12 +166,14 @@ public class AzureSQLServerDataService implements DataService
 
             try
             {
-                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-                connection = DriverManager.getConnection(connectionURL);
-
                 String sql = generateUpdateSQL(data);
                 if (sql != null)
                 {
+                    Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    connection = DriverManager.getConnection(connectionURL);
+
+                    
+
                     statement = connection.createStatement();
 
                     boolean result = statement.execute(sql);
