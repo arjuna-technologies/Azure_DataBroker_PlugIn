@@ -6,13 +6,13 @@
 
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.1">
     <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
-    <sub-deployment name="azure-plugin-1.0.0p1m1.jar">
+    <sub-deployment name="azure-plugin-1.0.0p2m1.jar">
         <dependencies>
             <module name="deployment.databroker.ear.data-common.jar"/>
             <module name="deployment.databroker.ear.data-core-jee.jar"/>
         </dependencies>
     </sub-deployment>
-    <sub-deployment name="azure-storage-1.0.0p1m1.jar">
+    <sub-deployment name="azure-storage-1.0.0p2m1.jar">
         <dependencies>
             <module name="deployment.databroker.ear.data-common.jar"/>
             <module name="deployment.databroker.ear.data-common-jee.jar"/>
